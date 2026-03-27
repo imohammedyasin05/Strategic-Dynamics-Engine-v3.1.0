@@ -98,7 +98,9 @@ export default function App() {
     setResult(null);
 
     try {
-      const response = await fetch("/api/analyze", {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+      const url = baseUrl ? `${baseUrl}/api/analyze` : '/api/analyze';
+      const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
