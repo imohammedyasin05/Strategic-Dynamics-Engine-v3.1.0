@@ -9,8 +9,13 @@ import React, { useState, useEffect, useRef } from "react";
 
 interface AnalysisResult {
   situationRead: string;
+  herInvestmentLevel: "Low" | "Medium" | "High";
+  myPosition: "chasing" | "balanced" | "in control";
+  timingDecision: "Instant" | "Short delay" | "Medium delay" | "Long delay" | "Very long delay";
   action: "Reply" | "Leave on read" | "React with emoji" | "Delay reply";
   reason: string;
+  distanceStrategy: string;
+  frameControl: string;
   isEliteUsed?: boolean;
   replyData?: {
     text: string;
@@ -102,11 +107,21 @@ export default function App() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (e) {
+          throw new Error(`Server error (${response.status}): ${response.statusText}`);
+        }
         throw new Error(errorData.error || "Analysis failed");
       }
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        throw new Error("Invalid response from server. Please try again.");
+      }
       setResult(data);
 
       // Add to history
@@ -254,11 +269,32 @@ export default function App() {
                   </p>
                 </section>
 
+                {/* Dynamics Analysis */}
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white/5 border border-white/10 p-5 rounded-2xl space-y-2">
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-white/30">Her Investment</div>
+                    <div className="text-lg font-medium text-white/90">{result.herInvestmentLevel}</div>
+                  </div>
+                  <div className="bg-white/5 border border-white/10 p-5 rounded-2xl space-y-2">
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-white/30">My Position</div>
+                    <div className="text-lg font-medium text-white/90 capitalize">{result.myPosition}</div>
+                  </div>
+                  <div className="bg-white/5 border border-white/10 p-5 rounded-2xl space-y-2">
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-white/30">Frame Control</div>
+                    <div className="text-sm font-medium text-white/80 leading-relaxed">{result.frameControl}</div>
+                  </div>
+                  <div className="bg-white/5 border border-white/10 p-5 rounded-2xl space-y-2">
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-white/30">Distance Strategy</div>
+                    <div className="text-sm font-medium text-white/80 leading-relaxed">{result.distanceStrategy}</div>
+                  </div>
+                </section>
+
                 {/* Action & Reason */}
                 <section className="space-y-4">
                   <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-white/30">
                     <CornerDownRight className="w-3 h-3 text-[#F27D26]" />
                     The Move — <span className="text-[#F27D26]">{result.action}</span>
+                    <span className="text-white/50">({result.timingDecision})</span>
                     {result.isEliteUsed && <span className="ml-2 px-1.5 py-0.5 bg-[#F27D26]/20 text-[#F27D26] rounded text-[8px] border border-[#F27D26]/30">Elite Analysis</span>}
                   </div>
                   <div className={`transition-all duration-500 p-6 md:p-8 rounded-2xl space-y-4 ${result.isEliteUsed ? 'bg-[#F27D26]/10 border border-[#F27D26]/40 shadow-[0_0_30px_rgba(242,125,38,0.1)]' : 'bg-white/5 border border-white/10'}`}>
@@ -523,7 +559,7 @@ export default function App() {
                           {!isExpanded && (
                             <div className="flex items-center gap-2 text-[8px] font-mono uppercase tracking-widest text-white/30">
                               <CornerDownRight className="w-2 h-2 text-[#F27D26]" />
-                              {item.result.action}
+                              {item.result.action} <span className="text-white/20">({item.result.timingDecision})</span>
                             </div>
                           )}
                         </div>
@@ -545,7 +581,7 @@ export default function App() {
                               <div className="space-y-1">
                                 <span className="text-[7px] font-mono uppercase tracking-widest text-white/30">The Move</span>
                                 <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-[#F27D26]">
-                                  {item.result.action}
+                                  {item.result.action} <span className="text-white/50">({item.result.timingDecision})</span>
                                 </div>
                                 <p className="text-[10px] text-white/60 leading-relaxed">
                                   {item.result.reason}
