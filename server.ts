@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT || 3000;
 
   app.use(express.json());
   app.use(cors({
@@ -24,11 +24,14 @@ async function startServer() {
 
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
-    console.error("GROQ_API_KEY is not set in environment variables.");
+    console.error("❌ CRITICAL ERROR: GROQ_API_KEY is not set in environment variables.");
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("GROQ_API_KEY is required in production environment.");
+    }
   }
 
   const groq = new Groq({
-    apiKey: apiKey,
+    apiKey: apiKey || "dummy-key-for-dev",
   });
 
   const getSystemInstruction = (isElite: boolean) => `Act as a high-value, emotionally intelligent man who understands timing, attraction, and texting dynamics.
@@ -211,9 +214,16 @@ Give the smartest move with correct timing, strong frame, and high attraction.`;
         });
     }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
-}
-
-startServer();
+   app.listen(PORT, "0.0.0.0", () => {
+     console.log(`🚀 Server running in ${process.env.NODE_ENV || 'development'} mode`);
+     console.log(`📡 Listening on port ${PORT}`);
+     if (!process.env.GROQ_API_KEY) {
+       console.warn("⚠️  Warning: GROQ_API_KEY is missing. /api/analyze will fail.");
+     }
+   });
+ }
+ 
+ startServer().catch(err => {
+   console.error("💥 Failed to start server:", err);
+   process.exit(1);
+ });
