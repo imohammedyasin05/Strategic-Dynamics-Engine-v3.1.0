@@ -8,12 +8,18 @@ import cors from "cors";
 
 dotenv.config();
 
+console.log("🛠️ ENV CHECK:", {
+  PORT: process.env.PORT,
+  HAS_GROQ_KEY: !!process.env.GROQ_API_KEY,
+  NODE_ENV: process.env.NODE_ENV
+});
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
-  const PORT = process.env.PORT || 3000;
+  const PORT = process.env.PORT || 10000; // Render default or 10000
 
   app.use(express.json());
   app.use(cors({
@@ -214,7 +220,7 @@ Give the smartest move with correct timing, strong frame, and high attraction.`;
         });
     }
 
-   app.listen(PORT, "0.0.0.0", () => {
+   app.listen(Number(PORT), "0.0.0.0", () => {
      console.log(`🚀 Server running in ${process.env.NODE_ENV || 'development'} mode`);
      console.log(`📡 Listening on port ${PORT}`);
      if (!process.env.GROQ_API_KEY) {
